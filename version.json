@@ -1,6 +1,6 @@
 {
-"version": "1.4",
-"release_notes": "색보정 기능 추가 및 FPS 입력 UI 개선",
+"version": "1.5",
+"release_notes": "동영상 성능 개선 및 썸네일 로딩 진행률 표시 추가",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
