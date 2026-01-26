@@ -1,6 +1,6 @@
 {
 "version": "1.2",
 "release_notes": "바이너리 자동 업데이트 기능 추가 및 UI 안정화",
-"win_url": "https://www.google.com/url?sa=E&source=gmail&q=https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
-"mac_url": "https://www.google.com/search?q=https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.app.zip"
+"win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
+"mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
