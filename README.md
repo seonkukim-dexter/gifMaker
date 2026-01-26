@@ -4,6 +4,8 @@
 
 mkv, mp4, mov, avi 등 다양한 영상 파일을 클릭 몇 번으로 움직이는 GIF(움짤)로 변환해 보세요.
 
+![인터페이스화면](./gifMaker_UI.png)
+
 ## 최신 버전 다운로드
 - [윈도우용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe)
 - [맥OS용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip)
@@ -25,6 +27,11 @@ mkv, mp4, mov, avi 등 다양한 영상 파일을 클릭 몇 번으로 움직이
 변환하고 싶은 영상을 선택하고 '변환' 버튼을 누르면 끝!
 
 맥용은 맨 처음 실행할 때 시스템에 따라 약간의 시간이 소요됩니다. 하지만 이후부터는 빠르게 실행됩니다.
+
+### 윈도우 실행 및 보안 이슈 해결
+다운 받은 파일을 맨 처음 실행했을 때 보안 관련 문제가 나오면,
+
+‘추가 정보’ 클릭 후, ‘실행’을 클릭하면 됩니다.
 
 ### 맥OS 실행 시 보안 이슈 해결 방법
 다운 받은 파일을 압축을 풀고 gifMaker 앱을 응용프로그램 폴더에 복사합니다.
