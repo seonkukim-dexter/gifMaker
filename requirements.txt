@@ -1,0 +1,10 @@
+pyinstaller
+customtkinter
+moviepy
+pillow
+tkinterdnd2
+proglog
+tqdm
+imageio-ffmpeg
+decorator
+imageio
