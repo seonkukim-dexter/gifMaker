@@ -1,6 +1,6 @@
 {
-"version": "1.3",
-"release_notes": "대기열 목록 옵션 메뉴 추가 및 동영상 재생 안정화",
+"version": "1.4",
+"release_notes": "색보정 기능 추가 및 FPS 입력 UI 개선",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
