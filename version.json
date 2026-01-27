@@ -1,6 +1,6 @@
 {
-"version": "1.5",
-"release_notes": "동영상 성능 개선 및 썸네일 로딩 진행률 표시 추가",
+"version": "1.6",
+"release_notes": "대기열 일괄 처리 에러 수정 및 안전성 강화",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
