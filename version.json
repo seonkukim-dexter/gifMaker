@@ -1,6 +1,6 @@
 {
-"version": "2.0.0",
-"release_notes": "시퀀스 파일 로딩 기능 추가 및 대대적인 업데이트",
+"version": "2.0.1",
+"release_notes": "폴더 일괄 불러오기 오동작 수정 및 기타 치명적 버그 수정",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
