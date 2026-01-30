@@ -1,6 +1,6 @@
 {
-"version": "2.0.2",
-"release_notes": "일괄 변환 및 즉시 변환 문제 수정",
+"version": "2.0.3",
+"release_notes": "WebP 변환 속도 최적화 및 안정성 수정",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
