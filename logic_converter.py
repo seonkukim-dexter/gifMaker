@@ -269,6 +269,19 @@ class ConverterMixin:
                 self.queue_window.update_list()
             threading.Thread(target=self._batch_task, args=(save_dir, selected), daemon=True).start()
 
+    def bulk_update_selected_items(self, indices, new_settings):
+        """선택된 대기열 항목들에 일괄 수정 창에서 설정한 값을 적용합니다."""
+        if not indices: return
+        
+        for idx in indices:
+            if 0 <= idx < len(self.queue):
+                job = self.queue[idx]
+                job.update(new_settings)
+                job['status'] = "대기"
+
+        if self.queue_window and self.queue_window.winfo_exists():
+            self.queue_window.update_list()
+
     def _batch_task(self, save_dir, selected_indices):
         from moviepy import VideoFileClip 
         

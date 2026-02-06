@@ -1,6 +1,6 @@
 {
-"version": "2.2.2",
-"release_notes": "mp4, webm 영상 변환 시 오디오가 있는 경우 에러 나는 문제 수정",
+"version": "2.2.3",
+"release_notes": "일괄 수정 안되는 문제 수정",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }

@@ -1,5 +1,5 @@
 # 프로그램 정보
-APP_VERSION = "2.2.2" # (핫픽스) MP4, WebM에 오디오가 있는 경우 에러나는 문제 수정
+APP_VERSION = "2.2.3" # (핫픽스) 일괄 수정 안되는 문제 수정
 APP_TITLE = "Dexter GIF Maker by wondermc"
 GITHUB_USER = "seonkukim-dexter"
 GITHUB_REPO = "gifMaker"
