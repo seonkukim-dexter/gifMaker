@@ -1,4 +1,9 @@
-# 🎬 Dexter Video to GIF Converter Pro
+# 🎬 Dexter GIF Maker by wondermc
+
+## 최신 버전 다운로드
+- [윈도우용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe)
+- [맥OS용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip)
+
 ## 소개
 제미나이(Gemini)와 함께 만든 초간편 영상-GIF 변환기!
 
@@ -6,11 +11,10 @@
 
 움직이는 시퀀스 이미지 파일들도 다양한 포맷으로 변환할 수 있어요.
 
+특히 여러개의 영상들이 들어있는 폴더를 한번에 썸네일 이미지로 만들 수도 있어요.
+
 ![인터페이스화면](./gifMaker_UI.png)
 
-## 최신 버전 다운로드
-- [윈도우용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe)
-- [맥OS용](https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip)
 
 ## 주요 기능
 - 다양한 포맷 지원: .mp4, .mkv, .mov, .avi, .gif, .jpg, webm, webp
@@ -19,14 +23,14 @@
 
 - 직관적인 타임라인 인터페이스와 추가 옵션 제공.
   
-- 일괄 변환 가능 및 목록 내보내기 및 가져오기 지원 (JSON 포맷)
+- 일괄 변환 가능 및 목록 내보내기 및 가져오기 지원 (JSON 포맷으로 저장)
    
 ## 🚀 설치 및 업데이트
 이 프로그램은 포터블(Portable) 버전으로 제작되었습니다.
 
 복잡한 파이썬 환경 설정이나 라이브러리 설치 과정이 전혀 필요 없습니다!
 
-별도의 설치 과정 없이, 다운로드한 파일을 그냥 실행합니다.
+별도의 설치 과정 없이, 다운로드한 파일을 그냥 실행하면 됩니다.
 
 맥용은 맨 처음 실행할 때 시스템에 따라 약간의 시간이 소요됩니다. 하지만 이후부터는 빠르게 실행됩니다.
 
