@@ -3,6 +3,7 @@ import sys
 import threading
 import json
 import subprocess
+import tempfile
 import numpy as np
 from tkinter import filedialog, messagebox
 from PIL import Image
@@ -91,17 +92,20 @@ class ConverterMixin:
                     final_fps, fmt = int(self.fps_input_var.get() or 30), self.export_format_var.get()
                     actual_transparent = self.keep_transparency_var.get() and sub.mask is not None
                     
+                    # 안전한 임시 오디오 파일 경로 생성 (Read-only 에러 방지)
+                    temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_single_{os.getpid()}.mp3")
+
                     if fmt == "Sequence":
                         img_format = os.path.join(save_path, f"{os.path.basename(save_path)}.%04d.{self.seq_format_var.get().lower()}")
                         sub.write_images_sequence(img_format, fps=final_fps, logger=logger)
                     elif fmt == "WebM":
                         ffmpeg_params = ['-b:v', f"{self.webm_bitrate_var.get()}M", '-auto-alt-ref', '0', '-metadata:s:v:0', 'alpha_mode=1']
                         ffmpeg_params.extend(['-pix_fmt', 'yuva420p'] if self.keep_transparency_var.get() and sub.mask is not None else ['-pix_fmt', 'yuv420p'])
-                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params)
+                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True)
                     elif fmt == "WebP": 
                         video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self)
                     elif fmt == "MP4": 
-                        sub.write_videofile(save_path, fps=final_fps, codec='libx264', audio=False, bitrate=f"{self.webm_bitrate_var.get()}M", logger=logger)
+                        sub.write_videofile(save_path, fps=final_fps, codec='libx264', audio=False, bitrate=f"{self.webm_bitrate_var.get()}M", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                     else: 
                         video_engine.perform_write_gif(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self)
 
@@ -322,14 +326,18 @@ class ConverterMixin:
                             
                             actual_transparent = job.get('transparent') and sub.mask is not None
 
+                            # [수정] 일괄 변환용 안전한 임시 오디오 파일 경로 생성
+                            temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_batch_{q_idx}_{os.getpid()}.mp3")
+
                             if fmt == "Sequence":
                                 img_format = os.path.join(out_path, f"{os.path.basename(out_path)}.%04d.{job.get('seq_format', 'JPG').lower()}")
                                 sub.write_images_sequence(img_format, fps=job['fps'], logger=logger)
                             elif fmt == "WebM":
                                 pix_fmt = 'yuva420p' if actual_transparent else 'yuv420p'
-                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt])
+                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True)
                             elif fmt == "WebP": video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
-                            elif fmt == "MP4": sub.write_videofile(out_path, fps=job['fps'], codec='libx264', logger=logger)
+                            elif fmt == "MP4": 
+                                sub.write_videofile(out_path, fps=job['fps'], codec='libx264', logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                             else: video_engine.perform_write_gif(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                     
                     job['status'], success_count = "완료", success_count + 1
