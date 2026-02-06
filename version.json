@@ -1,6 +1,6 @@
 {
-"version": "2.2.0",
-"release_notes": "대대적인 업데이트",
+"version": "2.2.1",
+"release_notes": "타임라인 충돌 문제 해결",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
