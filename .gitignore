@@ -1,5 +1,6 @@
 gifMaker.spec
 .DS_Store
+.venv/
 build/
 dist/
-.venv/
+__pycache__

@@ -22,10 +22,11 @@ from logic_converter import ConverterMixin
 try:
     from moviepy import VideoFileClip
 except ImportError:
-    try:
-        from moviepy.editor import VideoFileClip
-    except ImportError:
-        pass
+    pass
+    # try:
+    #     from moviepy.editor import VideoFileClip
+    # except ImportError:
+    #     pass
 
 # Drag & Drop
 if utils.HAS_DND:
