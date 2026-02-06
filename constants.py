@@ -1,5 +1,5 @@
 # 프로그램 정보
-APP_VERSION = "2.2.3" # (핫픽스) 일괄 수정 안되는 문제 수정
+APP_VERSION = "2.2.4" # (핫픽스) mp4 변환 시 오디오 누락 문제 수정
 APP_TITLE = "Dexter GIF Maker by wondermc"
 GITHUB_USER = "seonkukim-dexter"
 GITHUB_REPO = "gifMaker"

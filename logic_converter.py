@@ -105,7 +105,7 @@ class ConverterMixin:
                     elif fmt == "WebP": 
                         video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self)
                     elif fmt == "MP4": 
-                        sub.write_videofile(save_path, fps=final_fps, codec='libx264', audio=False, bitrate=f"{self.webm_bitrate_var.get()}M", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
+                        sub.write_videofile(save_path, fps=final_fps, codec='libx264', audio_codec="aac", bitrate=f"{self.webm_bitrate_var.get()}M", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                     else: 
                         video_engine.perform_write_gif(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self)
 
@@ -350,7 +350,7 @@ class ConverterMixin:
                                 sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True)
                             elif fmt == "WebP": video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                             elif fmt == "MP4": 
-                                sub.write_videofile(out_path, fps=job['fps'], codec='libx264', logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
+                                sub.write_videofile(out_path, fps=job['fps'], codec='libx264', audio_codec="aac", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                             else: video_engine.perform_write_gif(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                     
                     job['status'], success_count = "완료", success_count + 1
