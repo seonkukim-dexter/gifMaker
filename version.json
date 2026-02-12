@@ -1,6 +1,6 @@
 {
-"version": "2.2.4",
-"release_notes": "mp4 변환 시 오디오 누락 문제 수정",
+"version": "2.2.5",
+"release_notes": "일괄 변환 시 썸네일이 PNG로만 만들어지는 문제와 Alpha 문제 수정",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }

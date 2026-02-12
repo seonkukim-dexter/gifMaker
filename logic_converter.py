@@ -62,10 +62,13 @@ class ConverterMixin:
             logger = CTKLogger(self, prefix="변환 중...", job_index=None)
             color_settings = {"color_correction": self.color_correction_var.get(), "exposure": self.exposure_var.get(), "gamma": self.gamma_var.get(), "contrast": self.contrast_var.get(), "saturation": self.saturation_var.get(), "tint": self.tint_var.get(), "temperature": self.temperature_var.get()}
 
+            # 원본에 실제 알파 채널이 있을 때만 has_mask=True 로드 (오류 방지)
+
             if self.video_path == "Image Sequence":
                 main_clip = video_engine.get_sequence_clip(self.sequence_paths, int(self.fps_input_var.get() or 24))
             else:
-                main_clip = VideoFileClip(self.video_path, has_mask=True)
+                has_alpha = self.video_path.lower().endswith(('.gif', '.png', '.webp', '.webm'))
+                main_clip = VideoFileClip(self.video_path, has_mask=has_alpha)
 
             with main_clip:
                 target_w = int(self.combo_width.get())
@@ -96,16 +99,18 @@ class ConverterMixin:
                         img_format = os.path.join(save_path, f"{os.path.basename(save_path)}.%04d.{self.seq_format_var.get().lower()}")
                         sub.write_images_sequence(img_format, fps=final_fps, logger=logger)
                     elif fmt == "WebM":
-                        # [수정] WebM용 임시 오디오 (.ogg)
+                        # WebM용 임시 오디오 (.ogg)
                         temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_single_{os.getpid()}.ogg")
 
                         ffmpeg_params = ['-b:v', f"{self.webm_bitrate_var.get()}M", '-auto-alt-ref', '0', '-metadata:s:v:0', 'alpha_mode=1']
                         ffmpeg_params.extend(['-pix_fmt', 'yuva420p'] if self.keep_transparency_var.get() and sub.mask is not None else ['-pix_fmt', 'yuv420p'])
-                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True)
+
+                        # actual_transparent 적용 (withmask 속성 추가하여 ffmpeg 투명도 충돌 방지)
+                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True, withmask=actual_transparent)
                     elif fmt == "WebP": 
                         video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self)
                     elif fmt == "MP4": 
-                        # [수정] MP4용 임시 오디오 (.m4a) - AAC 호환
+                        # MP4용 임시 오디오 (.m4a) - AAC 호환
                         temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_single_{os.getpid()}.m4a")
                         sub.write_videofile(save_path, fps=final_fps, codec='libx264', audio_codec="aac", bitrate=f"{self.webm_bitrate_var.get()}M", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                     else: 
@@ -319,7 +324,13 @@ class ConverterMixin:
                         out_path = get_unique_path(os.path.join(save_dir, f"{base_name}{ext}"))
 
                     logger = CTKLogger(self, prefix=f"({i+1}/{total})", job_index=q_idx, total_jobs=total)
-                    c = video_engine.get_sequence_clip(job['sequence_paths'], job['fps']) if job.get('is_sequence') else VideoFileClip(job['path'], has_mask=True)
+
+                    # 원본 파일 형태에 따라 has_mask를 안전하게 부여
+                    if job.get('is_sequence'):
+                        c = video_engine.get_sequence_clip(job['sequence_paths'], job['fps'])
+                    else:
+                        has_alpha = job['path'].lower().endswith(('.gif', '.png', '.webp', '.webm'))
+                        c = VideoFileClip(job['path'], has_mask=has_alpha)
                     
                     with c:
                         target_w = job['width']
@@ -339,19 +350,21 @@ class ConverterMixin:
                                 def b_filter(img): return np.array(video_engine.apply_color_correction_pil(Image.fromarray(img.astype('uint8')), batch_cs).convert('RGB'))
                                 sub = sub.image_transform(b_filter)
                             
+                             # 실제 mask가 존재하는 경우에만 투명도 옵션을 유지
                             actual_transparent = job.get('transparent') and sub.mask is not None
 
                             if fmt == "Sequence":
                                 img_format = os.path.join(out_path, f"{os.path.basename(out_path)}.%04d.{job.get('seq_format', 'JPG').lower()}")
                                 sub.write_images_sequence(img_format, fps=job['fps'], logger=logger)
                             elif fmt == "WebM":
-                                # [수정] WebM 일괄 변환용 임시 오디오 (.ogg)
+                                # WebM 일괄 변환용 임시 오디오 (.ogg)
                                 temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_batch_{q_idx}_{os.getpid()}.ogg")
                                 pix_fmt = 'yuva420p' if actual_transparent else 'yuv420p'
-                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True)
+                                # withmask 전달하여 FFMPEG 파이프라인에서 RGB/RGBA 형식 충돌 방지
+                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True, withmask=actual_transparent)
                             elif fmt == "WebP": video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                             elif fmt == "MP4": 
-                                # [수정] MP4 일괄 변환용 임시 오디오 (.m4a) - AAC 호환
+                                # MP4 일괄 변환용 임시 오디오 (.m4a) - AAC 호환
                                 temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_batch_{q_idx}_{os.getpid()}.m4a")
                                 sub.write_videofile(out_path, fps=job['fps'], codec='libx264', audio_codec="aac", logger=logger, temp_audiofile=temp_audio_path, remove_temp=True)
                             else: video_engine.perform_write_gif(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)

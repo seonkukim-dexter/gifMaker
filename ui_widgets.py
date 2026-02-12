@@ -17,11 +17,11 @@ class TimelineSlider(ctk.CTkCanvas):
         self.in_point, self.out_point, self.play_head, self.duration, self.fps = 0.0, 1.0, 0.0, 1.0, 24
         self.thumbnails, self.dim_layer_images, self.active_handle, self.on_change_callback = [], [], None, None
         
-        # [복구] 사용자 조작 시작/종료 콜백 (충돌 방지용)
+        # 사용자 조작 시작/종료 콜백 (충돌 방지용)
         self.on_press_callback = None
         self.on_release_callback = None
         
-        # [추가] 이벤트 스로틀링을 위한 시간 변수
+        # 이벤트 스로틀링을 위한 시간 변수
         self.last_update_time = 0
         self.update_interval = 0.05  # 50ms (초당 약 20회로 제한)
 
@@ -331,7 +331,8 @@ class BulkEditWindow(ctk.CTkToplevel):
                 "export_format": self.format_var.get(),
                 "transparent": self.alpha_var.get(),
                 "loop": int(self.loop_var.get() or 0),
-                "bitrate": self.bitrate_var.get()
+                "bitrate": self.bitrate_var.get(),
+                "seq_format": self.seq_format_var.get()
             }
             self.app.bulk_update_selected_items(self.indices, settings)
             
@@ -528,9 +529,19 @@ class QueueWindow(ctk.CTkToplevel):
         state = self.all_check_var.get()
         for var in self.check_vars.values(): var.set(state)
 
+    # 하나라도 체크가 해제되면 "전체 선택" 체크박스를 끄기 위한 동기화 로직
+    def _sync_select_all_checkbox(self):
+        if not self.check_vars:
+            self.all_check_var.set(False)
+            return
+        # 모든 항목이 True인지 검사
+        all_checked = all(var.get() for var in self.check_vars.values())
+        self.all_check_var.set(all_checked)
+
     def on_checkbox_click(self, index):
         """체크박스 클릭 시 마지막 선택 인덱스 저장"""
         self.last_checked_index = index
+        self._sync_select_all_checkbox()
 
     def on_shift_click_checkbox(self, index):
         """Shift+Click 시 범위 선택 처리"""
@@ -545,6 +556,7 @@ class QueueWindow(ctk.CTkToplevel):
                     self.check_vars[i].set(target_state)
         
         self.last_checked_index = index
+        self._sync_select_all_checkbox()
 
     def remove_selected(self):
         indices = [i for i, v in self.check_vars.items() if v.get()]
@@ -675,7 +687,13 @@ class QueueWindow(ctk.CTkToplevel):
                     l_cnt = job.get('loop', 0)
                     details.append(f"Loop{'' if l_cnt == 0 else '(%d)' % l_cnt}")
 
-                if job.get('transparent'): details.append("Alpha")
+                # JPG, MP4는 UI 체크박스와 상관없이 Alpha 강제 OFF 처리
+                seq_fmt_check = job.get('seq_format', 'JPG').upper()
+                supports_alpha = True
+                if export_fmt == "MP4" or (export_fmt in ["Sequence", "Thumbnail"] and seq_fmt_check in ["JPG", "JPEG"]):
+                    supports_alpha = False
+
+                if job.get('transparent') and supports_alpha: details.append("Alpha")
                 if job.get('crop_enabled'): details.append("Crop")
                 if job.get('color_settings', {}).get('color_correction', False): details.append(f"CC")
                 
@@ -759,7 +777,7 @@ class QueueWindow(ctk.CTkToplevel):
         self.update_list()
 
     def append_log(self, message):
-        """로그 텍스트 박스에 메시지 추가 (외부 호출용)"""
+        """로그 텍스트 박스에 메시지 (외부 호출용)"""
         if hasattr(self, 'log_textbox') and self.winfo_exists():
             timestamp = datetime.now().strftime("%H:%M:%S")
             self.log_textbox.configure(state="normal")
