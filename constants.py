@@ -1,5 +1,5 @@
 # 프로그램 정보
-APP_VERSION = "2.2.5" # 일괄 변환 시 썸네일이 PNG로만 만들어지는 문제와 Alpha 문제 수정
+APP_VERSION = "2.2.6" # (핫픽스) 영상 변환 시 하드웨어 가속에 문제가 없도록 표준 색공간만 사용하도록 수정
 APP_TITLE = "Dexter GIF Maker by wondermc"
 GITHUB_USER = "seonkukim-dexter"
 GITHUB_REPO = "gifMaker"

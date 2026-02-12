@@ -1,6 +1,6 @@
 {
-"version": "2.2.5",
-"release_notes": "일괄 변환 시 썸네일이 PNG로만 만들어지는 문제와 Alpha 문제 수정",
+"version": "2.2.6",
+"release_notes": "(핫픽스) 영상 변환 로직 대폭 개선",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
