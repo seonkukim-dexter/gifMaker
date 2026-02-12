@@ -17,7 +17,7 @@
 
 
 ## 주요 기능
-- 다양한 포맷 지원: .mp4, .mkv, .mov, .avi, .gif, .jpg, webm, webp
+- 다양한 포맷 지원: .mp4, .mkv, .mov, .avi, .gif, .jpg, .exr, webm, webp
   
 - 고해상도 영상 지원 (4K, 8K)을 위한 프록시 모드 제공.
 
@@ -57,7 +57,7 @@
 
 - UI: CustomTkinter
 
-- Video Processing: MoviePy
+- Video Processing: MoviePy, FFMPEG
 
 - Packaging: PyInstaller
 
