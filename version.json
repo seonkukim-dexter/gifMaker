@@ -1,6 +1,6 @@
 {
-"version": "2.2.6",
-"release_notes": "(핫픽스) 영상 변환 로직 대폭 개선",
+"version": "2.2.7",
+"release_notes": "(핫픽스) WebM 변환 문제 수정",
 "win_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.exe",
 "mac_url": "https://github.com/seonkukim-dexter/gifMaker/releases/latest/download/gifMaker.zip"
 }
