@@ -232,7 +232,7 @@ class ConverterMixin:
                         temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_single_{os.getpid()}.ogg")
                         ffmpeg_params = ['-b:v', f"{self.webm_bitrate_var.get()}M", '-auto-alt-ref', '0', '-metadata:s:v:0', 'alpha_mode=1']
                         ffmpeg_params.extend(['-pix_fmt', 'yuva420p'] if actual_transparent else ['-pix_fmt', 'yuv420p'])
-                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True, withmask=actual_transparent)
+                        sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True)
                     elif fmt == "WebP": 
                         video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), actual_transparent, self)
                     else: 
@@ -483,7 +483,8 @@ class ConverterMixin:
                             elif fmt == "WebM":
                                 temp_audio_path = os.path.join(tempfile.gettempdir(), f"temp_audio_batch_{q_idx}_{os.getpid()}.ogg")
                                 pix_fmt = 'yuva420p' if actual_transparent else 'yuv420p'
-                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True, withmask=actual_transparent)
+                                # [수정] withmask 인자 제거
+                                sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True)
                             elif fmt == "WebP": 
                                 video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                             else: 
