@@ -207,7 +207,9 @@ class ConverterMixin:
                 if fmt == "Thumbnail":
                     t_pos = self.timeline.play_head * self.duration
                     sub = main_clip.resized(width=target_w) if hasattr(main_clip, 'resized') else main_clip.resize(width=target_w)
-                    video_engine.perform_write_single_image(sub, save_path, t_pos, color_settings, self)
+                    webp_q = int(self.webp_quality_var.get() or 80)
+                    webp_l = self.webp_lossless_var.get()
+                    video_engine.perform_write_single_image(sub, save_path, t_pos, color_settings, self, webp_q=webp_q, webp_l=webp_l)
                 else:
                     st, et = self.timeline.in_point * self.duration, self.timeline.out_point * self.duration
                     sub = main_clip.subclipped(st, et) if hasattr(main_clip, 'subclipped') else main_clip.subclip(st, et)
@@ -234,7 +236,9 @@ class ConverterMixin:
                         ffmpeg_params.extend(['-pix_fmt', 'yuva420p'] if actual_transparent else ['-pix_fmt', 'yuv420p'])
                         sub.write_videofile(save_path, fps=final_fps, codec='libvpx-vp9', logger=logger, ffmpeg_params=ffmpeg_params, temp_audiofile=temp_audio_path, remove_temp=True)
                     elif fmt == "WebP": 
-                        video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), actual_transparent, self)
+                        webp_q = int(self.webp_quality_var.get() or 80)
+                        webp_l = self.webp_lossless_var.get()
+                        video_engine.perform_write_webp(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), self.keep_transparency_var.get(), self, quality=webp_q, lossless=webp_l)
                     else: 
                         video_engine.perform_write_gif(sub, save_path, final_fps, logger, int(self.loop_count_var.get() or 0), actual_transparent, self)
 
@@ -282,7 +286,10 @@ class ConverterMixin:
         "fps": self.fps, "width": int(self.combo_width.get()), "export_format": self.export_format_var.get(),
         "transparent": self.keep_transparency_var.get(), "loop": int(self.loop_count_var.get() or 0),
         "crop": list(self.crop_coords), "crop_enabled": self.crop_enabled_var.get(),
-        "bitrate": self.webm_bitrate_var.get(), "color_settings": cs
+        "bitrate": self.webm_bitrate_var.get(), 
+        "webp_quality": int(self.webp_quality_var.get() or 80),
+        "webp_lossless": self.webp_lossless_var.get(), # WebP 옵션 처리
+        "color_settings": cs
         }
 
         if self.editing_index >= 0:
@@ -332,6 +339,9 @@ class ConverterMixin:
             self.timeline.update_points(st, et if et != -1 else self.duration, self.duration, play_head=st, fps=self.fps)
             self.crop_coords = list(job.get('crop', [0,0,1,1])); self.crop_enabled_var.set(job.get('crop_enabled', False))
             self.loop_count_var.set(str(job.get('loop', 0))); self.keep_transparency_var.set(job.get('transparent', True))
+            # WebP 옵션 추가
+            self.webp_quality_var.set(str(job.get('webp_quality', 80)))
+            self.webp_lossless_var.set(job.get('webp_lossless', False))
             fmt = job.get('export_format', "GIF"); self.export_format_var.set(fmt); self._update_export_ui(fmt)
             cs = job.get('color_settings', {})
             self.exposure_var.set(cs.get('exposure', 0.0)); self.gamma_var.set(cs.get('gamma', 1.0))
@@ -461,7 +471,9 @@ class ConverterMixin:
                         target_w = job['width']
                         if fmt == "Thumbnail":
                             c_res = c.resized(width=target_w) if hasattr(c, 'resized') else c.resize(width=target_w)
-                            video_engine.perform_write_single_image(c_res, out_path, job['start'], job.get('color_settings', {}), self)
+                            webp_q = job.get('webp_quality', 80)
+                            webp_l = job.get('webp_lossless', False)
+                            video_engine.perform_write_single_image(c_res, out_path, job['start'], job.get('color_settings', {}), self, webp_q=webp_q, webp_l=webp_l)
                         else:
                             st, et = max(0, job['start']), min(c.duration, (job['end'] if job['end'] != -1 else c.duration))
                             sub = c.subclipped(st, et) if hasattr(c, 'subclipped') else c.subclip(st, et)
@@ -485,8 +497,10 @@ class ConverterMixin:
                                 pix_fmt = 'yuva420p' if actual_transparent else 'yuv420p'
                                 # [수정] withmask 인자 제거
                                 sub.write_videofile(out_path, fps=job['fps'], codec='libvpx-vp9', logger=logger, ffmpeg_params=['-pix_fmt', pix_fmt], temp_audiofile=temp_audio_path, remove_temp=True)
-                            elif fmt == "WebP": 
-                                video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
+                            elif fmt == "WebP":
+                                webp_q = job.get('webp_quality', 80)
+                                webp_l = job.get('webp_lossless', False)
+                                video_engine.perform_write_webp(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self, quality=webp_q, lossless=webp_l)                                 
                             else: 
                                 video_engine.perform_write_gif(sub, out_path, job['fps'], logger, job.get('loop', 0), actual_transparent, self)
                     

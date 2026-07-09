@@ -302,8 +302,8 @@ def get_sequence_clip(paths, fps):
             
     return rgb_clip
 
-def perform_write_webp(clip, filename, fps, logger, loop, transparent, app_instance):
-    """Pillow를 사용하여 WebP 애니메이션 저장"""
+def perform_write_webp(clip, filename, fps, logger, loop, transparent, app_instance, quality=80, lossless=False):
+    """Pillow를 사용하여 WebP 애니메이션을 저장하며, 품질, 무손실, 고효율 압축을 적용합니다."""
     frames = []
     total_frames = int(clip.duration * fps)
     for i in range(total_frames):
@@ -322,8 +322,16 @@ def perform_write_webp(clip, filename, fps, logger, loop, transparent, app_insta
             logger.bars_update('main', index=i + 1, total=total_frames)
     if frames:
         if logger: logger.bars_update('main', index=total_frames, total=total_frames)
+
+        # 메타데이터 강제 제거
+        for frame in frames:
+            frame.info.pop('exif', None)
+            frame.info.pop('xmp', None)
+            frame.info.pop('icc_profile', None)
+
+        # method=6 고정으로 최상의 압축률 적용
         frames[0].save(filename, save_all=True, append_images=frames[1:], 
-                       duration=int(1000/fps), loop=loop, quality=85, method=0, lossless=False)
+                       duration=int(1000/fps), loop=loop, quality=quality, method=6, lossless=lossless)
 
 def perform_write_gif(clip, filename, fps, logger, loop, transparent, app_instance):
     """Pillow를 사용하여 GIF 저장"""
@@ -349,8 +357,8 @@ def perform_write_gif(clip, filename, fps, logger, loop, transparent, app_instan
         if transparent: frames[0].save(filename, **save_args, transparency=0, disposal=2)
         else: frames[0].save(filename, **save_args)
 
-def perform_write_single_image(clip, filename, timestamp, settings, app_instance):
-    """한 프레임을 단일 이미지(JPG, PNG, WebP, GIF)로 저장"""
+def perform_write_single_image(clip, filename, timestamp, settings, app_instance, webp_q=80, webp_l=False):
+    """한 프레임을 단일 이미지(JPG, PNG, WebP, GIF)로 저장하며 WebP 특화 옵션을 적용합니다."""
     try:
         frame = clip.get_frame(timestamp)
         img = Image.fromarray(frame.astype('uint8'))
@@ -372,7 +380,12 @@ def perform_write_single_image(clip, filename, timestamp, settings, app_instance
         elif ext == '.png':
             img.save(filename, "PNG")
         elif ext == '.webp':
-            img.save(filename, "WEBP", lossless=True)
+            # 메타데이터 강제 제거
+            img.info.pop('exif', None)
+            img.info.pop('xmp', None)
+            img.info.pop('icc_profile', None)
+            # method=6 고정으로 최상의 압축률 적용
+            img.save(filename, "WEBP", quality=webp_q, lossless=webp_l, method=6)
         elif ext == '.gif':
             img.save(filename, "GIF")
         return True

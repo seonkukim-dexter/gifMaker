@@ -37,6 +37,10 @@ class PlayerMixin:
             self.crop_coords = list(edit_job['crop']); self.crop_enabled_var.set(edit_job.get('crop_enabled', False))
             self.loop_count_var.set(str(edit_job.get('loop', 0))); self.keep_transparency_var.set(edit_job.get('transparent', has_alpha))
 
+            # WebP 옵션 복구
+            self.webp_quality_var.set(str(edit_job.get('webp_quality', 80)))
+            self.webp_lossless_var.set(edit_job.get('webp_lossless', False))
+
             # 수동으로 투명도 설정 적용 (원본에 마스크가 있을 때만 체크 값 수용)
             if has_alpha:
                 self.keep_transparency_var.set(edit_job.get('transparent', True))

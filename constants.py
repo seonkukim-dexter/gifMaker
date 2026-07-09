@@ -1,5 +1,5 @@
 # 프로그램 정보
-APP_VERSION = "2.2.7" # WebM 변환 문제 수정
+APP_VERSION = "2.2.8" # WebM 변환 문제 수정
 APP_TITLE = "Dexter GIF Maker by wondermc"
 GITHUB_USER = "seonkukim-dexter"
 GITHUB_REPO = "gifMaker"

@@ -50,7 +50,7 @@ class VideoToGifApp(ctk.CTk,
             self.dnd_available = False
 
         self.title(f"{const.APP_TITLE} v{const.APP_VERSION}")
-        self.geometry("1100x950")
+        self.geometry("1280x950")
 
         self._init_vars()
         self.setup_ui()
@@ -84,6 +84,7 @@ class VideoToGifApp(ctk.CTk,
         self.queue = []
         self.queue_window = None
         
+        # Crop 및 프리뷰 변수
         self.crop_coords = [0.0, 0.0, 1.0, 1.0]
         self.last_preview_time = -1.0
         self.preview_update_timer = None 
@@ -94,6 +95,7 @@ class VideoToGifApp(ctk.CTk,
         self.orig_crop_coords = None
         self.latest_update_data = None
         
+        # 스레드 락
         self.render_lock = threading.Lock() 
         self.clip_access_lock = threading.Lock() 
         
@@ -101,6 +103,7 @@ class VideoToGifApp(ctk.CTk,
         self.last_save_dir = None
         self.video_aspect_ratio = 1.0
         
+        # 작업 상태 제어
         self.cancel_requested = False
         self.batch_paused = False
         self.is_batch_converting = False
@@ -117,7 +120,12 @@ class VideoToGifApp(ctk.CTk,
         self.export_format_var = ctk.StringVar(value=const.DEFAULT_EXPORT_FORMAT)
         self.seq_format_var = ctk.StringVar(value=const.DEFAULT_SEQ_FORMAT)
         self.webm_bitrate_var = ctk.StringVar(value="2") 
+
+        # WebP 최적화 관련 추가 변수 (Quality 0~100, Lossless 여부)
+        self.webp_quality_var = ctk.StringVar(value="80")
+        self.webp_lossless_var = ctk.BooleanVar(value=False)
         
+        # 색보정 변수
         self.exposure_var = ctk.DoubleVar(value=0.0)
         self.gamma_var = ctk.DoubleVar(value=1.0)
         self.contrast_var = ctk.DoubleVar(value=0.0)
@@ -223,7 +231,7 @@ class VideoToGifApp(ctk.CTk,
         self.dynamic_opt_frame = ctk.CTkFrame(self.export_frame_content, fg_color="transparent")
         self.dynamic_opt_frame.pack(side="left", fill="both", expand=True)
         self.check_alpha = ctk.CTkCheckBox(self.dynamic_opt_frame, text="Alpha", variable=self.keep_transparency_var)
-        self.combo_seq_format = ctk.CTkComboBox(self.dynamic_opt_frame, values=const.SEQUENCE_FORMATS, width=85, variable=self.seq_format_var, state="readonly")
+        self.combo_seq_format = ctk.CTkComboBox(self.dynamic_opt_frame, values=const.SEQUENCE_FORMATS, width=85, variable=self.seq_format_var, state="readonly", command=self._update_export_ui)
         self.bitrate_container = ctk.CTkFrame(self.dynamic_opt_frame, fg_color="transparent")
         ctk.CTkLabel(self.bitrate_container, text="Bitrate:", font=("Arial", 11)).pack(side="left", padx=(5, 2))
         self.entry_bitrate = ctk.CTkEntry(self.bitrate_container, width=40, textvariable=self.webm_bitrate_var)
@@ -233,6 +241,17 @@ class VideoToGifApp(ctk.CTk,
         ctk.CTkLabel(self.loop_container, text="반복:", font=("Arial", 11)).pack(side="left", padx=(5, 2))
         self.entry_loop_count = ctk.CTkEntry(self.loop_container, width=40, textvariable=self.loop_count_var)
         self.entry_loop_count.pack(side="left", padx=5)
+
+        # WebP 전용 컨테이너 (Quality, Lossless)
+        self.webp_opt_container = ctk.CTkFrame(self.dynamic_opt_frame, fg_color="transparent")
+        self.webp_quality_var = ctk.StringVar(value="80")
+        self.webp_lossless_var = ctk.BooleanVar(value=False)
+        self.check_webp_lossless = ctk.CTkCheckBox(self.webp_opt_container, text="Lossless", variable=self.webp_lossless_var, width=60)
+        self.check_webp_lossless.pack(side="left", padx=(5, 10))
+        ctk.CTkLabel(self.webp_opt_container, text="Quality:", font=("Arial", 11)).pack(side="left", padx=(5, 2))
+        self.entry_webp_quality = ctk.CTkEntry(self.webp_opt_container, width=35, textvariable=self.webp_quality_var)
+        self.entry_webp_quality.pack(side="left", padx=2)
+
         self._update_export_ui(self.export_format_var.get())
         
         etc_frame = ctk.CTkFrame(self.bottom_options, fg_color="#2b2b2b", corner_radius=8)
@@ -314,7 +333,7 @@ class VideoToGifApp(ctk.CTk,
         self.exposure_var.set(0.0); self.gamma_var.set(1.0); self.contrast_var.set(0.0); self.saturation_var.set(1.0); self.tint_var.set(0.0); self.temperature_var.set(0.0)
 
     def _update_export_ui(self, choice):
-        self.check_alpha.pack_forget(); self.combo_seq_format.pack_forget(); self.bitrate_container.pack_forget(); self.loop_container.pack_forget()
+        self.check_alpha.pack_forget(); self.combo_seq_format.pack_forget(); self.bitrate_container.pack_forget(); self.loop_container.pack_forget(); self.webp_opt_container.pack_forget();
 
         fps_state = "disabled" if choice == "Thumbnail" else "normal"
         self.fps_slider.configure(state=fps_state)
@@ -327,6 +346,7 @@ class VideoToGifApp(ctk.CTk,
             self.check_alpha.pack(side="left", padx=10); self.bitrate_container.pack(side="left", padx=5)
         elif choice == "WebP":
             self.check_alpha.pack(side="left", padx=10); self.loop_container.pack(side="left", padx=5)
+            self.webp_opt_container.pack(side="left", padx=5)
         elif choice == "MP4":
             self.bitrate_container.pack(side="left", padx=10)
         elif choice == "Sequence":

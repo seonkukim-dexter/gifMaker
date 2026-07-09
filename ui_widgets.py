@@ -247,7 +247,7 @@ class BulkEditWindow(ctk.CTkToplevel):
         
         # 확장자 포맷
         self.seq_format_var = ctk.StringVar(value=const.DEFAULT_SEQ_FORMAT)
-        self.combo_seq_format = ctk.CTkComboBox(self.dynamic_opt_frame, values=const.SEQUENCE_FORMATS, width=85, variable=self.seq_format_var, state="readonly")
+        self.combo_seq_format = ctk.CTkComboBox(self.dynamic_opt_frame, values=const.SEQUENCE_FORMATS, width=85, variable=self.seq_format_var, state="readonly", command=self._update_ui_visibility)
         
         # Bitrate
         self.bitrate_container = ctk.CTkFrame(self.dynamic_opt_frame, fg_color="transparent")
@@ -263,6 +263,16 @@ class BulkEditWindow(ctk.CTkToplevel):
         self.loop_var = ctk.StringVar(value="0")
         self.entry_loop = ctk.CTkEntry(self.loop_container, width=40, textvariable=self.loop_var)
         self.entry_loop.pack(side="left", padx=5)
+
+        # 일괄 수정 창용 WebP 옵션 변수 및 UI 추가
+        self.webp_opt_container = ctk.CTkFrame(self.dynamic_opt_frame, fg_color="transparent")
+        self.webp_quality_var = ctk.StringVar(value="80")
+        self.webp_lossless_var = ctk.BooleanVar(value=False)
+        self.check_webp_lossless = ctk.CTkCheckBox(self.webp_opt_container, text="Lossless", variable=self.webp_lossless_var, width=60)
+        self.check_webp_lossless.pack(side="left", padx=(5, 10))
+        ctk.CTkLabel(self.webp_opt_container, text="Quality:", font=("Arial", 11)).pack(side="left", padx=(5, 2))
+        self.entry_webp_quality = ctk.CTkEntry(self.webp_opt_container, width=35, textvariable=self.webp_quality_var)
+        self.entry_webp_quality.pack(side="left", padx=2)
 
         # 3. 색보정 설정 (비활성화 고정)
         etc_frame = ctk.CTkFrame(options_row, fg_color="#2b2b2b", corner_radius=8)
@@ -297,25 +307,46 @@ class BulkEditWindow(ctk.CTkToplevel):
 
     def _update_ui_visibility(self, choice):
         self.check_alpha.pack_forget(); self.combo_seq_format.pack_forget()
-        self.bitrate_container.pack_forget(); self.loop_container.pack_forget()
+        # self.bitrate_container.pack_forget(); self.loop_container.pack_forget()
+        self.webp_opt_container.pack_forget();
         
         fps_state = "disabled" if choice == "Thumbnail" else "normal"
         self.fps_slider.configure(state=fps_state); self.entry_fps.configure(state=fps_state)
         self.label_fps_unit.configure(text_color="gray" if fps_state == "disabled" else "white")
         self.check_alpha.configure(state="normal")
         
+        # Export Format 콤보박스 선택에 따른 이벤트 설정
         if choice == "GIF":
             self.check_alpha.pack(side="left", padx=10); self.loop_container.pack(side="left", padx=5)
         elif choice == "WebM":
             self.check_alpha.pack(side="left", padx=10); self.bitrate_container.pack(side="left", padx=5)
         elif choice == "WebP":
             self.check_alpha.pack(side="left", padx=10); self.loop_container.pack(side="left", padx=5)
+            self.webp_opt_container.pack(side="left", padx=5)
         elif choice == "MP4":
-            self.bitrate_container.pack(side="left", padx=10); self.check_alpha.deselect(); self.check_alpha.configure(state="disabled")
+            self.bitrate_container.pack(side="left", padx=10)
         elif choice == "Sequence":
             self.combo_seq_format.pack(side="left", padx=5); self.check_alpha.pack(side="left", padx=10)
+            if self.seq_format_var.get() == "WebP":
+                self.webp_opt_container.pack(side="left", padx=5)
         elif choice == "Thumbnail":
             self.combo_seq_format.pack(side="left", padx=5); self.seq_format_var.set("JPG")
+            # if self.seq_format_var.get() == "WebP":
+            #     self.webp_opt_container.pack(side="left", padx=5)
+
+        # if choice == "GIF":
+        #     self.check_alpha.pack(side="left", padx=10); self.loop_container.pack(side="left", padx=5)
+        # elif choice == "WebM":
+        #     self.check_alpha.pack(side="left", padx=10); self.bitrate_container.pack(side="left", padx=5)
+        # elif choice == "WebP":
+        #     self.check_alpha.pack(side="left", padx=10); self.loop_container.pack(side="left", padx=5)
+        #     self.webp_opt_container.pack(side="left", padx=5)
+        # elif choice == "MP4":
+        #     self.bitrate_container.pack(side="left", padx=10); self.check_alpha.deselect(); self.check_alpha.configure(state="disabled")
+        # elif choice == "Sequence":
+        #     self.combo_seq_format.pack(side="left", padx=5); self.check_alpha.pack(side="left", padx=10)
+        # elif choice == "Thumbnail":
+        #     self.combo_seq_format.pack(side="left", padx=5); self.seq_format_var.set("JPG")
 
     def cancel(self):
         """취소 버튼 동작: 로그 출력 후 창 닫기"""
@@ -332,7 +363,9 @@ class BulkEditWindow(ctk.CTkToplevel):
                 "transparent": self.alpha_var.get(),
                 "loop": int(self.loop_var.get() or 0),
                 "bitrate": self.bitrate_var.get(),
-                "seq_format": self.seq_format_var.get()
+                "seq_format": self.seq_format_var.get(),
+                "webp_quality": int(self.webp_quality_var.get() or 80),
+                "webp_lossless": self.webp_lossless_var.get()
             }
             self.app.bulk_update_selected_items(self.indices, settings)
             
@@ -686,6 +719,10 @@ class QueueWindow(ctk.CTkToplevel):
                 if export_fmt in ["GIF", "WebP"]:
                     l_cnt = job.get('loop', 0)
                     details.append(f"Loop{'' if l_cnt == 0 else '(%d)' % l_cnt}")
+                
+                if export_fmt == "WebP":
+                    details.append(f"Q:{job.get('webp_quality', 80)}")
+                    if job.get('webp_lossless'): details.append("Lossless")
 
                 # JPG, MP4는 UI 체크박스와 상관없이 Alpha 강제 OFF 처리
                 seq_fmt_check = job.get('seq_format', 'JPG').upper()
